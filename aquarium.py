@@ -10,10 +10,11 @@
 # Imports 
 import numpy as np
 import math
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 
 # Constants
+Xmin = 0
 Xmin = 0
 Xmax = (24*math.pi)
 Ymin = -(6*math.pi)
@@ -23,7 +24,7 @@ Zmax = (2* math.pi)
 Wishbone = (5 * pow(10,-6))
 Wishbone1 = (2 * pow(10,-8))
 Wishbone2 = (3 * pow(10,-6))
-V = 3628800
+V = 362
 tmin = 0
 t = 0
 
@@ -42,14 +43,20 @@ q2 = (1/8.5)
 # Chemical Consentrations
 
 C1 = 0 # NH4 (Ammonia)
-C2 = 8.5 # O2 (Oxygen)
+C2 = 0 # O2 (Oxygen)
 C3 = 0 # NO2 (NitrITE)
 C4 = 0 # NO3 (NitrATE)
+
+C1i = 0 # NH4 (Ammonia)
+C2i = 8.5 # O2 (Oxygen)
+C3i = 0 # NO2 (NitrITE)
+C4i = 0 # NO3 (NitrATE)
 
 dC1 = [] # Array of NH4 Conc
 dC2 = [] # Array of O2 Conc
 dC3 = [] # Array of Nitrite Conc
 dC4 = [] # Array of Nitrate Conc
+dT = [] # Time array
 
 # Define Functions
 # Mu s
@@ -113,12 +120,13 @@ while t < V:
     C3 += changeInNitrite(t)
     C4 += changeInNitrate(t)
     # Append Values to Concetration Arrays
-    dC1.append(C1)
-    dC2.append(C2)
-    dC3.append(C3)
-    dC4.append(C4)
+    dC1.append(C1-C1i)
+    dC2.append(C2-C2i)
+    dC3.append(C3-C3i)
+    dC4.append(C4-C4i)
     # Update Time
     t += 1
+    dT.append(t)
 #======================================================================================================================================
 # Plotting Start
 #======================================================================================================================================
@@ -126,16 +134,17 @@ while t < V:
 fig, ax = plt.subplots()
 
 # Plotting the data
-ax.plot(t, dC1, label='Ammonia')
-ax.plot(t, dC2, label='Oxygen')
-ax.plot(t, dC3, label='Nitrite')
-ax.plot(t, dC4, label='Nitrate')
-
+ax.plot(dT, dC1, label='Ammonia')
+ax.plot(dT, dC2, label='Oxygen')
+ax.plot(dT, dC3, label='Nitrite')
+ax.plot(dT, dC4, label='Nitrate')
+print(dC1[1])
+print(dC4[1])
 # Adding a legend, title, and labels
 ax.legend()
-ax.set_title('Aquarium CHemicals Over Time')
+ax.set_title('Aquarium Chemicals Over Time')
 ax.set_xlabel('Time')
-ax.set_ylabel('Concentration')
+ax.set_ylabel('Change in Concentration')
 
 # Display the plot
 plt.show() 
