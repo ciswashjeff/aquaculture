@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Plants"
   ],
-  "SelectedNode": "\\aquarium.py",
+  "SelectedNode": "\\Plants\\plant.py",
   "PreviewInSolutionExplorer": false
 }

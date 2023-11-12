@@ -13,13 +13,10 @@ from asyncio.constants import DEBUG_STACK_DEPTH
 
 """
 To-do List:
--Create constructor
--Create get methods
--Create growth methods
--Determine probabilities
-    -methods to change probabilities
-    -calcs to determine proba
-    -markov chain
+-Create constructor (done)
+-Create get methods (done)
+-Create growth methods (done)
+-Determine growth rates and death conditions
 
 """
 
@@ -27,17 +24,12 @@ class Plant:
     """ *ARGUMENTS*
     size # numeric value from 0-1 that tracks the size of the plant
     growthRate # calculated growth rate of plant
-    growPercent # percent chance of growing
-    oxygenPercent # percent chance of producing oxygen
-    deathPercent # percent chance of plant dying
     living # boolean of whether or not the plant is living
     """
-    def __init__(self, size, growthRate, growPercent, oxygenPercent, deathPercent, living):
+    
+    def __init__(self, size, growthRate, living):
         self.size = size
         self.growthRate = growthRate
-        self.growPercent = growPercent
-        self.oxygenPercent = oxygenPercent
-        self.deathPercent = deathPercent
         self.living = living
         
     def getPlantSize(self):
@@ -45,15 +37,6 @@ class Plant:
 
     def getPlantGrowthRate(self):
         return self.growthRate
-
-    def getPlantGrowPercent(self):
-        return self.growPercent
-
-    def getPlantOxygenPercent(self):
-        return self.oxygenPercent
-    
-    def getPlantDeathPercent(self):
-        return self.deathPercent
     
     def getPlantLiving(self):
         return self.living
@@ -76,4 +59,11 @@ class Plant:
     def plantGrow(self):
         self.size = self.size + self.growthRate
         print(self.size)
+        
+    def eaten(self, amount):
+        if((self.size - amount) <= 0):
+            self.plantDie()
+        else:
+            self.size = self.size - amount
+        
         
