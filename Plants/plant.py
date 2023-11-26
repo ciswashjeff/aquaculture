@@ -20,7 +20,7 @@ To-do List:
 
 """
 
-class PlantPopulation:
+class Plant:
     """ *ARGUMENTS*
     size # numeric value from 0-1 that tracks the size of the plant
     growthRate # calculated growth rate of plant
