@@ -1,0 +1,271 @@
+ /* Typography*/
+
+ body {
+ background: white;
+ background-image: url(imgs/background.jpeg);
+ background-size: cover;
+ font-size: 87.5%; /* 14 px font */
+ font-family: sans-serif, 'Roboto', 'Arial', 'Verdana', 'Trebuchet MS'; /* multiple fonts for a variety of browsers */
+ line-height: 1.4;
+ }
+
+h1 { /* Aquaculture in the top left of the header each page */
+  font-style: italic;
+  font-size: 300%;
+  font-weight: 900;
+}
+
+h2 { /* the heading external and email links */
+  font-size: 120%;
+  padding: 3%;
+}
+
+h3 {  /* main headings on each page */
+  padding: 3% 3% 0% 3%;
+  font-size: 180%;
+}
+
+h4.homepageheadings { /* all of the headings on the homepage */
+  padding: 3% 3% 0% 3%;
+  margin: 5% 0% 0% 0%;
+  font-size: 140%;
+}
+
+h4 {  /*The sub headings on each page*/
+  font-size: 140%;
+}
+
+h5 { /* the heading for my footer */
+  padding: 1.5%;
+  font-style: italic;
+  font-weight: 900;
+}
+
+p {
+  padding: 2% 2% 2% 3%;
+  font-weight: 600;
+}
+
+a.homepagelinks {
+  text-decoration: none;
+  color: black;
+}
+
+a.homepagelinks:hover {
+  color: coral;
+}
+
+a.emails {
+  text-decoration: none;
+  color: black;
+  padding: 3%;
+}
+
+a.emails:hover {
+  background-color: black;
+  color: lightblue;
+}
+
+a.externallinks {
+    text-decoration: none;
+    color: black;
+    padding: 3%;
+}
+
+a.externallinks:hover {
+    text-decoration: none;
+    background-color: black;
+    color: coral;
+    padding: 3%;
+}
+/* Layout */
+
+* {
+  margin: 0;
+}
+
+#container {
+  width: 85%;
+  margin: 0 auto;
+}
+
+/* my banner (header) */
+header {
+  background-color: none;
+}
+
+/* the main navigation system for my website */
+ul.navcontainer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 2% 0% 0% 0%;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+li {
+  list-style: none;
+  float: left;
+}
+
+li a {
+  display: block;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: black;
+  color: lightblue;
+}
+
+a.activelink {
+  background-color: black;
+  color: lightblue;
+}
+
+
+/* side navigaion and contact info 
+aside {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  float: left;
+  width: 20%;
+  margin: 2% 0% 0% 0%;
+  padding: 0% 0% 10% 0%;
+  background-color: #A4343A;
+  border-radius: 25px;
+} */
+
+/* my main content area */
+main {
+  width: 100%;
+  margin: 2% 0% 2% 0%;
+  background-color: none;
+  }
+
+
+/* image styling. split into classes for the imgs on specific pages */
+img.home {
+  float: right;
+  width: 20%;
+  margin: 2%;
+  
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img.intro {
+  float: right;
+  margin: 0% 2% 8% 2%;
+  border-radius: 25px;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+
+img.method {
+  float: right;
+  margin: 2%;
+  border: 1px solid;
+  border-radius: 25px;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img.results {
+  float: right;
+  margin: 2%;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img.discussion {
+  float: right;
+  margin: 2%;
+  border: 1px solid;
+  border-radius: 25px;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img.linkedinicon:hover {
+  border: 2px solid black;
+}
+
+/* Table to display our results*/
+table, th, td {
+  padding: 10px;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+table {
+  margin: 3%;
+  font-weight: bold;
+}
+
+/* coloring the rows of the results table */
+tr:nth-child(1) {
+  background-color: coral;
+  color: white;
+}
+
+tr:nth-child(2) {
+  background-color: lightgrey;
+}
+
+tr:nth-child(3) {
+  background-color: grey;
+}
+
+tr:nth-child(4) {
+  background-color: lightgrey;
+}
+
+tr:nth-child(5) {
+  background-color: grey;
+}
+
+tr:nth-child(6) {
+  background-color: lightgrey;
+}
+
+tr:nth-child(7) {
+  background-color: grey;
+}
+
+tr:nth-child(8) {
+  background-color: lightgrey;
+}
+
+tr:nth-child(9){
+  background-color: grey;
+}
+
+footer {
+  background-color: black;
+  color: white;
+  clear: both;
+  margin: 2% 0% 0% 0%;
+  border-radius: 25px;
+}
+
+/* Media Queries */
+
+@media (max-width: 760px) { /* mobile phone screen size */
+  .navcontainer > li {
+    flex-basis: 80%;
+  }
+
+
+  main {
+    clear: both;
+    width: 100%;
+  }
+
+}

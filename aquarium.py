@@ -40,7 +40,7 @@ p4 = (2* pow(10,-17))
 q1 = (1/5)
 q2 = (1/8.5)
 
-# Chemical Consentrations
+# Chemical Concentrations
 
 C1 = 0 # NH4 (Ammonia)
 C2 = 0 # O2 (Oxygen)
@@ -57,6 +57,9 @@ dC2 = [] # Array of O2 Conc
 dC3 = [] # Array of Nitrite Conc
 dC4 = [] # Array of Nitrate Conc
 dT = [] # Time array
+
+# Plant Biomass List
+plantPopulation = [0.5, 0.00000019] # Normalized Plant Biomass, Growth Rate per Second
 
 # Define Functions
 # Mu s
@@ -81,16 +84,15 @@ def t2(t):
 # Change of concentration of Nitrate
 
 def changeInAmmonia(t):
-  oldAmmonia = C1
-  step1 = p1(t) * (1 - ((1/5) * C1))
-  step2 = step1 - mu1(t) * ((C1 * C1) * (C3 * C3))
+  step1 = p1(t) * (1 - ((q1) * C1))
+  step2 = step1 - mu1(t) * ((C1 * C1) * (C2 * C2 * C2))
   concentrationChange = step2
   return concentrationChange
 
 
 
 def changeInOxygen(t):    # Change of Oxygen concentration over time 
-    result = p2*(1-(1/5)*(C2))-mu1(t)*pow(C1,2)*pow(C2,3)-mu2(t)*math.sqrt(C2)*C3
+    result = p2*(1-(q1)*(C2))-mu1(t)*pow(C1,2)*pow(C2,3)-mu2(t)*math.sqrt(C2)*C3
     return result
   
 def changeInNitrite(t):    # Change of Nitrite concentration over time 
@@ -98,7 +100,7 @@ def changeInNitrite(t):    # Change of Nitrite concentration over time
     return result
 
 def changeInNitrate(t):    # Change of Nitrate concentration over time 
-  dt = (abs(0-t))
+  dt = 1
   dC4 = dt*(mu2(t)* math.sqrt(C2)*C3-(p4*C4))
   return dC4
 
@@ -114,6 +116,19 @@ def changeInNitrate(t):    # Change of Nitrate concentration over time
 #======================================================================================================================================
 t = 0
 while t < V:
+    # If plant biomass is greater than max, set it to max
+    if(plantPopulation[0] + plantPopulation[1] > 1):
+       plantPopulation[0] = 1
+    # If plant biomass is at or less than 0, keep it at 0
+    elif(plantPopulation[0] <= 0):
+       plantPopulation[0] = 0
+    # Otherwise, grow
+    else:
+        plantPopulation[0] += plantPopulation[1]
+    
+    p2 = p2 * (.5 + plantPopulation[0])
+    p4 = p4 * (.5 + plantPopulation[0])
+    
     # Update Values
     C1 += changeInAmmonia(t)
     C2 += changeInOxygen(t)
