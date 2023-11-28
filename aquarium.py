@@ -11,6 +11,11 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from alive_progress import alive_bar
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox
+from fish import fish
+
 
 
 # Constants
@@ -24,9 +29,10 @@ Zmax = (2* math.pi)
 Wishbone = (5 * pow(10,-6))
 Wishbone1 = (2 * pow(10,-8))
 Wishbone2 = (3 * pow(10,-6))
-V = 362
+V = 4838400     # Period of time to run sim over before list is cleared
+numV = 1        # Amount of times period of V is simulated 
 tmin = 0
-t = 0
+
 
 def p1(t):
   step1 = np.arctan(t0(t))             
@@ -40,10 +46,10 @@ p4 = (2* pow(10,-17))
 q1 = (1/5)
 q2 = (1/8.5)
 
-# Chemical Concentrations
+# Chemical Consentrations
 
 C1 = 0 # NH4 (Ammonia)
-C2 = 0 # O2 (Oxygen)
+C2 = 8.5 # O2 (Oxygen)
 C3 = 0 # NO2 (NitrITE)
 C4 = 0 # NO3 (NitrATE)
 
@@ -58,10 +64,23 @@ dC3 = [] # Array of Nitrite Conc
 dC4 = [] # Array of Nitrate Conc
 dT = [] # Time array
 
-# Plant Biomass List
-plantPopulation = [0.5, 0.00000019] # Normalized Plant Biomass, Growth Rate per Second
+
+
+
+# Other Factors
+DO = 10
+L = 75 # Size of tank in liters
+SelfSuffcient = False
+
 
 # Define Functions
+
+def convert_seconds_to_weeks(seconds):
+    dtWeeks = []
+    for t in seconds:
+        weeks = t/(604800)  # 604800 seconds in a week
+        dtWeeks.append(weeks)
+    return dtWeeks  
 # Mu s
 def mu1(t):
   result = Wishbone1*(np.arctan([t1(t)])-np.arctan([t1(tmin)]))
@@ -106,61 +125,164 @@ def changeInNitrate(t):    # Change of Nitrate concentration over time
 
 
    
+
+
+#======================================================================================================================================
+# Sim Function 
+#======================================================================================================================================
+def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_list):
+    print("=============================================================================================================================")
+    print("\n\n")
+    print("                              Agent-Based Continuous-Time Simulation of Aquaculture Systems                                     ")
+    print("                           Written By: Alex Puskaric, Devon Godde, Elijah Muzzi, Jacob Sinclair                                 ") 
+    print("\n")
+    print("=============================================================================================================================")
+    print("\n\nStarting Simulation...\n\n")
+
+    # Constants
+    fish_population = fish_list
+    V = int(duration)
+    dt = 1
+    alivebaramount = V // dt
+
+    
+
    
+    # Reset chemical concentrations for each simulation run
+    C1, C2, C3, C4 = 0, 8.5, 0, 0
+    dC1, dC2, dC3, dC4, dT = [], [], [], [], []
+
+    with alive_bar(alivebaramount) as bar:
+        for t in range(V):
+            for fish in fish_population:
+                action_result, status = fish.action(t)
+                if status == 'Eating':
+                    # Modify chemicals accordingly
+                    pass
+                elif status == 'Pooping':
+                    C1 += action_result  # Assuming action_result is the increase in Ammonia
+                elif status == 'Peeing':
+                    # Modify chemicals accordingly
+                    pass
+
+            C1 += changeInAmmonia(t)
+            C2 += changeInOxygen(t)
+            C3 += changeInNitrite(t)
+            C4 += changeInNitrate(t)
+
+            dC1.append(C1 - C1i)
+            dC3.append(C3 - C3i)
+            dC4.append(C4 - C4i)
+            dT.append(t)
+
+            bar()
+    print("Generating plots...")
+    plot_results(dC1, dC3, dC4, dT, fish_population, tank_size,tankStatus)
 
 
-# Write a plot function
-
-#======================================================================================================================================
-# Sim Start 
-#======================================================================================================================================
-t = 0
-while t < V:
-    # If plant biomass is greater than max, set it to max
-    if(plantPopulation[0] + plantPopulation[1] > 1):
-       plantPopulation[0] = 1
-    # If plant biomass is at or less than 0, keep it at 0
-    elif(plantPopulation[0] <= 0):
-       plantPopulation[0] = 0
-    # Otherwise, grow
-    else:
-        plantPopulation[0] += plantPopulation[1]
-    
-    p2 = p2 * (.5 + plantPopulation[0])
-    p4 = p4 * (.5 + plantPopulation[0])
-    
-    # Update Values
-    C1 += changeInAmmonia(t)
-    C2 += changeInOxygen(t)
-    C3 += changeInNitrite(t)
-    C4 += changeInNitrate(t)
-    # Append Values to Concetration Arrays
-    dC1.append(C1-C1i)
-    dC2.append(C2-C2i)
-    dC3.append(C3-C3i)
-    dC4.append(C4-C4i)
-    # Update Time
-    t += 1
-    dT.append(t)
 #======================================================================================================================================
 # Plotting Start
 #======================================================================================================================================
  # Create a figure and axis
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(2,2)
+fishPop = [0,0]
+plantPop = [0,0]
+production = 0
+tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed: {V/604800}"
 
-# Plotting the data
-ax.plot(dT, dC1, label='Ammonia')
-ax.plot(dT, dC2, label='Oxygen')
-ax.plot(dT, dC3, label='Nitrite')
-ax.plot(dT, dC4, label='Nitrate')
-print(dC1[1])
-print(dC4[1])
-# Adding a legend, title, and labels
-ax.legend()
-ax.set_title('Aquarium Chemicals Over Time')
-ax.set_xlabel('Time')
-ax.set_ylabel('Change in Concentration')
 
-# Display the plot
-plt.show() 
-  
+def plot_results(dC1, dC3, dC4, dT, fish_population, tank_size,tankStatus):
+    fig, ax = plt.subplots(2, 2, figsize=(10, 8))
+    
+
+    # Chemical plots
+    ax[0, 0].plot(convert_seconds_to_weeks(dT), dC1, label='Ammonia')
+    ax[0, 0].plot(convert_seconds_to_weeks(dT), dC3, label='Nitrite')
+    ax[0, 0].plot(convert_seconds_to_weeks(dT), dC4, label='Nitrate')
+    ax[0, 0].legend()
+    ax[0, 0].set_title('Aquarium Chemicals Over Time') 
+    ax[0, 0].set_xlabel('Time (Weeks)')
+    ax[0, 0].set_ylabel('Change in Concentration')
+
+    # Fish population plot
+    ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
+    ax[1, 0].set_title('Populations Over Time')
+    ax[1, 0].set_xlabel('Time (Weeks)')
+    ax[1, 0].set_ylabel('Population Size')
+    ax[1, 0].legend()
+
+    # Tank status
+    ax[0, 1].axis('off')
+
+    ax[1, 1].axis('off')
+    ax[1, 1].text(0.421, 0.998, tankStatus, fontsize=16, ha='left', va='bottom')
+
+    plt.tight_layout()
+    plt.show()
+
+
+# GUI
+
+class AquariumSimulatorGUI(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # GUI layout
+        layout = QVBoxLayout()
+
+        # Tank Size Input
+        self.tankSizeInput = QLineEdit(self)
+        layout.addWidget(QLabel('Tank Size (Liters):'))
+        layout.addWidget(self.tankSizeInput)
+
+        # Number of Fish Input
+        self.numberOfFishInput = QLineEdit(self)
+        layout.addWidget(QLabel('Number of Fish:'))
+        layout.addWidget(self.numberOfFishInput)
+
+        # Type of Fish Input
+        self.typeOfFishInput = QLineEdit(self)
+        layout.addWidget(QLabel('Type of Fish:'))
+        layout.addWidget(self.typeOfFishInput)
+
+        # Duration of Simulation Input
+        self.durationInput = QLineEdit(self)
+        layout.addWidget(QLabel('Duration of Simulation (Seconds):'))
+        layout.addWidget(self.durationInput)
+
+        # Save Log Checkbox
+        self.saveLogCheckbox = QCheckBox('Save Log to Folder', self)
+        layout.addWidget(self.saveLogCheckbox)
+
+        # Start Simulation Button
+        self.startButton = QPushButton('Start Simulation', self)
+        self.startButton.clicked.connect(self.start_simulation)
+        layout.addWidget(self.startButton)
+
+        self.setLayout(layout)
+
+    def start_simulation(self):
+        # Get input values
+        tank_size = int (self.tankSizeInput.text())
+        number_of_fish = int (self.numberOfFishInput.text())
+        type_of_fish = self.typeOfFishInput.text()
+        duration = self.durationInput.text()
+        save_log = self.saveLogCheckbox.isChecked()
+        
+        fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, 5) for x in range(number_of_fish)]
+
+        # Start the simulation with these parameters
+        # Implement the logic to start the simulation here
+        print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Type of fish: {type_of_fish}, Duration: {duration} seconds, Save log: {save_log}")
+        simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_population)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = AquariumSimulatorGUI()
+    window.show()
+    sys.exit(app.exec_())
+
+
+
+
+
