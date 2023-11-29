@@ -46,24 +46,6 @@ p4 = (2* pow(10,-17))
 q1 = (1/5)
 q2 = (1/8.5)
 
-# Chemical Consentrations
-
-C1 = 0 # NH4 (Ammonia)
-C2 = 8.5 # O2 (Oxygen)
-C3 = 0 # NO2 (NitrITE)
-C4 = 0 # NO3 (NitrATE)
-
-C1i = 0 # NH4 (Ammonia)
-C2i = 8.5 # O2 (Oxygen)
-C3i = 0 # NO2 (NitrITE)
-C4i = 0 # NO3 (NitrATE)
-
-dC1 = [] # Array of NH4 Conc
-dC2 = [] # Array of O2 Conc
-dC3 = [] # Array of Nitrite Conc
-dC4 = [] # Array of Nitrate Conc
-dT = [] # Time array
-
 
 
 
@@ -102,7 +84,7 @@ def t2(t):
 
 # Change of concentration of Nitrate
 
-def changeInAmmonia(t):
+def changeInAmmonia(t,C1,C2):
   step1 = p1(t) * (1 - ((q1) * C1))
   step2 = step1 - mu1(t) * ((C1 * C1) * (C2 * C2 * C2))
   concentrationChange = step2
@@ -110,15 +92,15 @@ def changeInAmmonia(t):
 
 
 
-def changeInOxygen(t):    # Change of Oxygen concentration over time 
+def changeInOxygen(t,C1,C2,C3):    # Change of Oxygen concentration over time 
     result = p2*(1-(q1)*(C2))-mu1(t)*pow(C1,2)*pow(C2,3)-mu2(t)*math.sqrt(C2)*C3
     return result
   
-def changeInNitrite(t):    # Change of Nitrite concentration over time 
+def changeInNitrite(t,C1,C2,C3):    # Change of Nitrite concentration over time 
     result = mu1(t)*(pow(C1,2))*(pow(C2,3))-mu2(t)*math.sqrt(C2)*C3-p3*C3
     return result
 
-def changeInNitrate(t):    # Change of Nitrate concentration over time 
+def changeInNitrate(t,C2,C3,C4):    # Change of Nitrate concentration over time 
   dt = 1
   dC4 = dt*(mu2(t)* math.sqrt(C2)*C3-(p4*C4))
   return dC4
@@ -150,6 +132,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_
    
     # Reset chemical concentrations for each simulation run
     C1, C2, C3, C4 = 0, 8.5, 0, 0
+    C1i, C2i, C3i, C4i = 0, 8.5, 0, 0
     dC1, dC2, dC3, dC4, dT = [], [], [], [], []
 
     with alive_bar(alivebaramount) as bar:
@@ -165,10 +148,10 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_
                     # Modify chemicals accordingly
                     pass
 
-            C1 += changeInAmmonia(t)
-            C2 += changeInOxygen(t)
-            C3 += changeInNitrite(t)
-            C4 += changeInNitrate(t)
+            C1 += changeInAmmonia(t,C1,C2)
+            C2 += changeInOxygen(t,C1,C2,C3)
+            C3 += changeInNitrite(t,C1,C2,C3)
+            C4 += changeInNitrate(t,C2,C3,C4)
 
             dC1.append(C1 - C1i)
             dC3.append(C3 - C3i)
@@ -188,7 +171,7 @@ fig, ax = plt.subplots(2,2)
 fishPop = [0,0]
 plantPop = [0,0]
 production = 0
-tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed: {V/604800}"
+tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {V/604800}"
 
 
 def plot_results(dC1, dC3, dC4, dT, fish_population, tank_size,tankStatus):
