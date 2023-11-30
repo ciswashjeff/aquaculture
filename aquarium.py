@@ -46,7 +46,9 @@ p4 = (2* pow(10,-17))
 q1 = (1/5)
 q2 = (1/8.5)
 
-
+# inital p2 and p4 for calculation
+p2i = p2
+p4i = p4
 
 
 # Other Factors
@@ -121,6 +123,9 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     print("=============================================================================================================================")
     print("\n\nStarting Simulation...\n\n")
 
+    # Plant Biomass List
+    plantPopulation = [0.5, (0.00000019*1)] # Normalized Plant Biomass, Growth Rate per Second
+
     # Constants
     fish_population = fish_list
     V = int(duration)
@@ -139,6 +144,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                 action_result, status = fish.action(t)
                 if status == 'Eating':
                     print("eating")
+                    plantPopulation[0] = plantPopulation[0] - fish.getServingSize()
                     # Modify chemicals accordingly
                     pass
                 elif status == 'Pooping':
@@ -165,6 +171,19 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                         # report that the fish are dead and the tank is not sufficient
                         SelfSuffcient = False
 
+            # If plant biomass is greater than max, set it to max
+            if((plantPopulation[0] + plantPopulation[1]) >= 1):
+                plantPopulation[0] = 1
+            # If plant biomass is at or less than 0, keep it at 0
+            elif(plantPopulation[0] <= 0):
+                plantPopulation[0] = 0
+            # Otherwise, grow
+            elif(plantPopulation[0] > 0):
+                plantPopulation[0] = plantPopulation[0] + plantPopulation[1]
+    
+            p2 = p2i * (0.5 + plantPopulation[0])
+            p4 = p4i * (0.5 + plantPopulation[0])   
+            
             C1 += changeInAmmonia(t,C1,C2)
             C2 += changeInOxygen(t,C1,C2,C3)
             C3 += changeInNitrite(t,C1,C2,C3)
@@ -179,9 +198,9 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     print("Generating plots...")
 
     # need to figure out how to properly add to the grams of fish produced
-    for fish in range(number_of_fish):
-        production += int(fish_population(1)(5))
-        print(fish_population(1)(5))
+    #for fish in range(number_of_fish):
+        #production += int(fish_population(1)(5))
+        #print(fish_population(1)(5))
     plot_results(dC1, dC3, dC4, dT, fish_population, production, tank_size, tankStatus)
 
 

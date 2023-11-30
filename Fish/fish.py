@@ -24,14 +24,18 @@ class Fish:
         self.living = True
     
     #these still need work, specifically in calculating the chemical changes
-    '''
+    
     def fishEat(eatPercent, fishGramWeight, servingSize):
-        self.servingSize = fishGram
+        self.servingSize = fishGramWeight*(0.04) # Serving size per feeding
         
+    '''    
     def fishPoop(poopPercent, poopAmount):
         self.poop += poopAmount
 
     '''
+
+    def getServingSize():
+        return (self.servingSize / 326) # Converts the serving size to a normalized value on the plant biomass and returns it
 
     #def fishPee():
     #need to work on this one a lot
@@ -48,15 +52,17 @@ class Fish:
 
     def fishActionGenerator(numFishEatingActions, numFishPoopingActions, numFishPeeingActions, eatIndex, poopIndex, peeIndex):
         fishActionProb = random.random()
+        
         if fishActionProb >= 0.0 and fishActionProb <= 0.0000069: #fish eats if the random number is in this range
             eatIndex += 1
             numFishEatingActions.append(eatIndex)
-            #fish.fishEat() 
+            fish.fishEat() 
         if fishActionProb > 0.0000069 and fishActionProb <= 0.0000104: #fish poops if the random number is in this range
             poopIndex += 1
             numFishPoopingActions.append(poopIndex)
             #fish.fishPoop()
         if fishActionProb > 0.0000104 and fishActionProb <= 0.0000173: #fish pees if the random number is in this range
+        
             peeIndex += 1
             numFishPeeingActions.append(peeIndex)
             #fish.fishPee() 
