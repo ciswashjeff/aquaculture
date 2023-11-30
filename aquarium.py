@@ -52,7 +52,7 @@ q2 = (1/8.5)
 # Other Factors
 DO = 10
 L = 75 # Size of tank in liters
-SelfSuffcient = False
+SelfSuffcient = True
 
 
 # Define Functions
@@ -112,7 +112,7 @@ def changeInNitrate(t,C2,C3,C4):    # Change of Nitrate concentration over time
 #======================================================================================================================================
 # Sim Function 
 #======================================================================================================================================
-def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_list):
+def simulation(tank_size, number_of_fish, type_of_fish, duration, production, save_log, fish_list):
     print("=============================================================================================================================")
     print("\n\n")
     print("                              Agent-Based Continuous-Time Simulation of Aquaculture Systems                                     ")
@@ -134,19 +134,39 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_
     C1, C2, C3, C4 = 0, 8.5, 0, 0
     C1i, C2i, C3i, C4i = 0, 8.5, 0, 0
     dC1, dC2, dC3, dC4, dT = [], [], [], [], []
+    fishHealth = 100
 
     with alive_bar(alivebaramount) as bar:
         for t in range(V):
             for fish in fish_population:
                 action_result, status = fish.action(t)
                 if status == 'Eating':
+                    print("eating")
                     # Modify chemicals accordingly
                     pass
                 elif status == 'Pooping':
                     C1 += action_result  # Assuming action_result is the increase in Ammonia
+                    print("pooping")
                 elif status == 'Peeing':
+                    print("peeing")
                     # Modify chemicals accordingly
                     pass
+                # (could move this to fish class)
+                # if the ammonia levels exceed 2 mg/L or nitrite levels exceed 5 mg/l
+                # the fish begin to die 
+                if C1 >= 2 or C3 >= 5:
+                    # each time of the simulation is one sec
+                    # if we assume it takes one week for the fish to die, it loses
+                    # 1/604800 (one week in seconds) of health each second
+                    fishHealth -= 1 / 604800
+                    if fishHealth <= 0:
+                        # pop the fish from the array
+                        for i in range(number_of_fish):
+                            fish_population.pop(0)
+                            print("a fish has died")
+                            
+                        # report that the fish are dead and the tank is not sufficient
+                        SelfSuffcient = False
 
             C1 += changeInAmmonia(t,C1,C2)
             C2 += changeInOxygen(t,C1,C2,C3)
@@ -160,7 +180,12 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_
 
             bar()
     print("Generating plots...")
-    plot_results(dC1, dC3, dC4, dT, fish_population, tank_size,tankStatus)
+
+    # need to figure out how to properly add to the grams of fish produced
+    for fish in range(number_of_fish):
+        production += int(fish_population(1)(5))
+        print(fish_population(1)(5))
+    plot_results(dC1, dC3, dC4, dT, fish_population, production, tank_size, tankStatus)
 
 
 #======================================================================================================================================
@@ -174,7 +199,7 @@ production = 0
 tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {V/604800}"
 
 
-def plot_results(dC1, dC3, dC4, dT, fish_population, tank_size,tankStatus):
+def plot_results(dC1, dC3, dC4, dT, fish_population, production, tank_size, tankStatus):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8))
     
 
@@ -185,9 +210,11 @@ def plot_results(dC1, dC3, dC4, dT, fish_population, tank_size,tankStatus):
     ax[0, 0].legend()
     ax[0, 0].set_title('Aquarium Chemicals Over Time') 
     ax[0, 0].set_xlabel('Time (Weeks)')
-    ax[0, 0].set_ylabel('Change in Concentration')
+    ax[0, 0].set_ylabel('Change in Concentration: mg/L')
 
+    
     # Fish population plot
+    
     ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
     ax[1, 0].set_title('Populations Over Time')
     ax[1, 0].set_xlabel('Time (Weeks)')
@@ -252,18 +279,25 @@ class AquariumSimulatorGUI(QWidget):
         duration = self.durationInput.text()
         save_log = self.saveLogCheckbox.isChecked()
         
-        fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, 5) for x in range(number_of_fish)]
+        fish_population = (fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, 5) for x in range(number_of_fish))
+
 
         # Start the simulation with these parameters
         # Implement the logic to start the simulation here
         print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Type of fish: {type_of_fish}, Duration: {duration} seconds, Save log: {save_log}")
-        simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_population)
+        simulation(tank_size, number_of_fish, type_of_fish, duration, production, save_log, fish_population)
 
+            
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = AquariumSimulatorGUI()
     window.show()
     sys.exit(app.exec_())
+
+
+
+
+
 
 
 
