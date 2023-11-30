@@ -126,9 +126,6 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     V = int(duration)
     dt = 1
     alivebaramount = V // dt
-
-    
-
    
     # Reset chemical concentrations for each simulation run
     C1, C2, C3, C4 = 0, 8.5, 0, 0
@@ -172,7 +169,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
             C2 += changeInOxygen(t,C1,C2,C3)
             C3 += changeInNitrite(t,C1,C2,C3)
             C4 += changeInNitrate(t,C2,C3,C4)
-
+            #print(C4)
             dC1.append(C1 - C1i)
             dC3.append(C3 - C3i)
             dC4.append(C4 - C4i)
@@ -272,6 +269,7 @@ class AquariumSimulatorGUI(QWidget):
         self.setLayout(layout)
 
     def start_simulation(self):
+        fish_population = []
         # Get input values
         tank_size = int (self.tankSizeInput.text())
         number_of_fish = int (self.numberOfFishInput.text())
@@ -279,8 +277,10 @@ class AquariumSimulatorGUI(QWidget):
         duration = self.durationInput.text()
         save_log = self.saveLogCheckbox.isChecked()
         
-        fish_population = (fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, 5) for x in range(number_of_fish))
-
+        for x in range(number_of_fish):
+            fish_population.append(fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, 5))
+        
+        #fish_population = (fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, 5) for x in range(number_of_fish))
 
         # Start the simulation with these parameters
         # Implement the logic to start the simulation here
