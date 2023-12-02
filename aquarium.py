@@ -150,7 +150,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                 action_result, status = fish.action(t)
                 if status == 'Eating':
                     print("eating")
-                    plantPopulation[0] = plantPopulation[0] - fish.getServingSize()
+                    plantPopulation[0] = plantPopulation[0] - fish.getAmmountEaten()
                     # Modify chemicals accordingly
                     pass
                 elif status == 'Pooping':
@@ -341,11 +341,3 @@ if __name__ == "__main__":
     window = AquariumSimulatorGUI()
     window.show()
     sys.exit(app.exec_())
-
-
-
-
-
-
-
-
