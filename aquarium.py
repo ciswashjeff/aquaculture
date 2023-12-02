@@ -230,10 +230,13 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 
     
     # Fish population plot
-    for fish in range(number_of_fish):
+    '''for fish in range(number_of_fish):
         currentFish = fish_population[fish]
         production += currentFish.getWeight()
-        print(fish_population[fish].getWeight())
+        print(fish_population[fish].getWeight())'''
+        
+    for fsh in fish_population: # This one should work for populating production
+        production += fsh.getWeight()
     
     tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {V/604800}"
     
