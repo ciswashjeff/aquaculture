@@ -24,7 +24,7 @@ in our simulation. **YOU MUST HAVE THE FILES IN THE SAME DIRECTORY FOR IT TO RUN
 
 ## Prerequisites
 
-Python
+Python :snake:
 
 Python libraries:
 * numpy
