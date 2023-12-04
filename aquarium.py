@@ -148,7 +148,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
         for t in range(V):
             for fish in fish_population:
                 index = fish_population.index(fish) + 1
-                fish.grow(t)
+                fish.grow()
                 action_result, status = fish.action(t)
                 if status == 'Eating':
                     if save_log:
@@ -235,7 +235,7 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
     #production = 0    
     for fish in fish_population: # This one should work for populating production
         production += fish.getWeight()
-    production = ("{:.2f}".format( int(production) )) 
+    production = ("{:.2f}".format(production)) 
 
     weeks = int(duration)/604800
     weeks = ("{:.2f}".format( weeks )) 
@@ -284,7 +284,7 @@ class AquariumSimulatorGUI(QWidget):
         layout.addWidget(QLabel('Size of Fish:'))
         self.dropdown.addItem('Fry- 1 gram')
         self.dropdown.addItem('Juveniles- 8 to 9 grams')
-        self.dropdown.addItem('Adults- 450 to 900 grams (1 to 2 pounds)')
+        self.dropdown.addItem('Adults- 220 to 440 grams (0.5 to 1 pound)')
 
         # Connecting a function to handle the item selection change
         self.dropdown.currentIndexChanged.connect(self.on_selection_change)
@@ -333,7 +333,7 @@ class AquariumSimulatorGUI(QWidget):
 
         # choosing the starting weight of the fish based on the value the user selects
         if 'Fry- 1 gram' in self.dropdown.currentText():
-            fish_weight = 1
+            fish_weights = 1
         elif 'Juveniles- 8 to 9 grams' in self.dropdown.currentText():
             fish_weights = random.randint(8, 9)
         elif 'Adults- 220 to 440 grams (0.5 to 1 pound)' in self.dropdown.currentText():
@@ -345,17 +345,3 @@ class AquariumSimulatorGUI(QWidget):
         
         fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, fish_weights) for x in range(number_of_fish)]
     
-        
-
-
-        # Start the simulation with these parameters
-        # Implement the logic to start the simulation here
-        print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Size of fish: {self.dropdown.currentText()}, Duration: {duration} seconds, Save log: {save_log}")
-        simulation(tank_size, number_of_fish, fish_weights, duration, production, save_log, fish_population)
-
-          
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = AquariumSimulatorGUI()
-    window.show()
-    sys.exit(app.exec_())
