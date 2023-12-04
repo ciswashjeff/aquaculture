@@ -201,8 +201,12 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                 
              
             bar()
-    print("Generating plots...")
-    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size)
+    if save_log:
+        print("Saving log...")
+        for event in log:
+            output_file.write(event)   
+        output_file.close()
+    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V)
 
     
 #======================================================================================================================================
@@ -236,17 +240,10 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
     weeks = int(duration)/604800
     weeks = ("{:.2f}".format( weeks )) 
     
-    # Fish population plot
-    '''for fish in range(number_of_fish):
-        currentFish = fish_population[fish]
-        production += currentFish.getWeight()
-        print(fish_population[fish].getWeight())'''
-        
-    for fsh in fish_population: # This one should work for populating production
-        production += fsh.getWeight()
+   
     
    
-    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {()}\n\nTime Elapsed in Week(s): {V/604800}"
+    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {weeks}"
     
     ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
     ax[1, 0].set_title('Populations Over Time')
