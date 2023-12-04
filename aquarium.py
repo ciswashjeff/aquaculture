@@ -56,7 +56,7 @@ p4i = p4
 # Other Factors
 DO = 10
 L = 75 # Size of tank in liters
-SelfSuffcient = True
+selfSufficient = True
 
 
 # Define Functions
@@ -144,20 +144,21 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     dC1, dC2, dC3, dC4, dT = [], [], [], [], []
     fishHealth = 100
 
-    with alive_bar(alivebaramount) as bar:
+    with alive_bar(alivebaramount, selfSufficient) as bar:
         for t in range(V):
             for fish in fish_population:
+                index = fish_population.index(fish) + 1
                 action_result, status = fish.action(t)
                 if status == 'Eating':
-                    print("eating")
+                    print(f"fish {index} is eating")
                     plantPopulation[0] = plantPopulation[0] - fish.getAmmountEaten()
                     # Modify chemicals accordingly
                     
                 elif status == 'Pooping':
-                    #C1 += action_result  # Assuming action_result is the increase in Ammonia
-                    print("pooping")
+                    C1 += action_result  # Assuming action_result is the increase in Ammonia
+                    print(f"fish {index} is pooping")
                 elif status == 'Peeing':
-                    print("peeing")
+                    print(f"fish {index} is peeing")
                     # Modify chemicals accordingly
                     C1 += action_result
                     
@@ -168,15 +169,17 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                     # each time of the simulation is one sec
                     # if we assume it takes one week for the fish to die, it loses
                     # 1/86400 (one week in seconds) of health each second
-                    fishHealth -= 1 / 604800
+                    fishHealth -= 1 / 86400
                     if fishHealth <= 0:
+                        # report the time step in weeks or day
+                        # report that the fish are dead and the tank is not sufficient
+                        selfSufficient = False
                         # pop the fish from the array
                         for i in range(number_of_fish):
                             fish_population.pop(0)
-                            print("a fish has died")
-                            
-                        # report that the fish are dead and the tank is not sufficient
-                        SelfSuffcient = False
+                            print(f"fish {i + 1} has died")
+                        
+        
 
 
             # If plant biomass is greater than max, set it to max
@@ -206,7 +209,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     print("Generating plots...")
     plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size)
 
-
+    
 #======================================================================================================================================
 # Plotting Start
 #======================================================================================================================================
@@ -238,7 +241,8 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
     for fsh in fish_population: # This one should work for populating production
         production += fsh.getWeight()
     
-    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {V/604800}"
+   
+    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {()}\n\nTime Elapsed in Week(s): {V/604800}"
     
     ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
     ax[1, 0].set_title('Populations Over Time')
@@ -254,7 +258,6 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 
     plt.tight_layout()
     plt.show()
-
 
 # GUI
 
@@ -309,6 +312,13 @@ class AquariumSimulatorGUI(QWidget):
         self.startButton.clicked.connect(self.start_simulation)
         layout.addWidget(self.startButton)
 
+        # Dropdown menu for fish weight / age
+        self.setWindowTitle('Dropdown Menu Example')
+
+        label = QLabel('Select age range:')
+        layout.addWidget(label)
+
+        self.setLayout(layout)
 
     def on_selection_change(self, index):
         selected_item = self.dropdown.currentText()
@@ -324,18 +334,17 @@ class AquariumSimulatorGUI(QWidget):
         if 'Fry- 1 gram' in self.dropdown.currentText():
             fish_weight = 1
         elif 'Juveniles- 8 to 9 grams' in self.dropdown.currentText():
-            fish_weight = random.randint(8, 9)
-        elif 'Adults- 450 to 900 grams (1 to 2 pounds)' in self.dropdown.currentText():
-            fish_weight = random.randint(450, 900)
-            
-
-        
+            fish_weights = random.randint(8, 9)
+        elif 'Adults- 220 to 440 grams (0.5 to 1 pound)' in self.dropdown.currentText():
+            fish_weights = random.randint(220, 440)
 
         duration = self.durationInput.text()
         save_log = self.saveLogCheckbox.isChecked()
         production = 0
         
         fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, fish_weights) for x in range(number_of_fish)]
+    
+        
 
 
         # Start the simulation with these parameters
@@ -343,7 +352,7 @@ class AquariumSimulatorGUI(QWidget):
         print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Size of fish: {self.dropdown.currentText()}, Duration: {duration} seconds, Save log: {save_log}")
         simulation(tank_size, number_of_fish, fish_weights, duration, production, save_log, fish_population)
 
-            
+          
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = AquariumSimulatorGUI()
