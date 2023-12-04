@@ -22,9 +22,18 @@ class fish:
         self.weight = weight
         self.living = True
         self.status = 'Nothing'
-        self.deadlyConc = 1
+        self.deadlyC1 = 2
+        self.deadlyC3 = 5
+        self.health = 86400 # A day in seconds
     
     #these still need work, specifically in calculating the chemical changes
+
+    def checkDeath(self,C1,C3):
+        if C1 >= self.deadlyC1 or C3 >= self.deadlyC3:
+            self.health -= 1
+            if self.health <= 0:
+                self.living = False   
+        return self.living
     
     def Eat(self):
         self.status = 'Eating'
