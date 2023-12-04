@@ -168,7 +168,6 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, save_log,fish_
 #======================================================================================================================================
  # Create a figure and axis
 fig, ax = plt.subplots(2,2)
-fishPop = [0,0]
 plantPop = [0,0]
 production = 0
 tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {SelfSuffcient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {V/604800}"
