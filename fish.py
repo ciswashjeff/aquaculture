@@ -61,25 +61,28 @@ class fish:
             BODcrit = 20
             BODmax = 40
 
-            # Calculate food assimilation efficiency (b) and other factors
-            # Note: The specific formulas for b and daily ration need to be based on the paper and environmental parameters T, DO, A, BOD
+    #def Grow(self,t):
+        #days = t/86400
+       # while self.weight <= 450:
+            #self.weight = pow((0.4244*days),2)+(83.729*days) 
+            
+    def getWeight(self):
+        return self.weight
 
-            # Calculate the rate of weight change
-            # Note: The specific formula needs to be adapted from the paper
-            # Example (simplified):
-            weight_change = h * (self.weight ** m) - kmin * (self.weight ** n)
-            self.weight += weight_change * t  # Update weight, t is the time step in days
-
+    def getAmmountEaten(self):
+        return (self.servingSize / 326) # Converts the serving size to a normalized value on the plant biomass and returns it
 
     def action(self,t):
         fishActionProb = random.random()
         print(fishActionProb)
         if fishActionProb >= 0.0 and fishActionProb <= self.eatPercent:      #fish eats if the random number is in this range 
             result = self.Eat() 
-        if fishActionProb > self.eatPercent and fishActionProb <= self.poopPercent: #fish poops if the random number is in this range   
+        elif fishActionProb > self.eatPercent and fishActionProb <= self.poopPercent: #fish poops if the random number is in this range   
             result = self.Poop()
-        if fishActionProb > self.poopPercent and fishActionProb <= self.peePercent: #fish pees if the random number is in this range
+        elif fishActionProb > self.poopPercent and fishActionProb <= self.peePercent: #fish pees if the random number is in this range
             result = self.Pee(t) 
+            #print(fishActionProb,self.eatPercent,self.poopPercent,self.peePercent)
+            
         else:                                                          #if none of these if statements are fulfilled, the fish is doing no actions
             result = 0
             self.status = "Nothing"
