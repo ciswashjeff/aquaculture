@@ -53,13 +53,13 @@ class fish:
         result = self.weight * ratio * days
         return result
     
-    def grow(self,t):
-        weeks = 32* 604800
-        GrowthRate = 440/(weeks)    #Grows to 440 grams over 8 months
+    def grow(self):
+        growthRate = 13.75 / 604800
         if self.weight <= 440:
-            self.weight += t * GrowthRate
+            self.weight = self.weight + growthRate
             
     def getWeight(self):
+        print(self.weight)
         return self.weight
 
     def getAmmountEaten(self):
@@ -82,6 +82,7 @@ class fish:
             
         #  print(self.status)
         return result,self.status
+    
     
 
             
