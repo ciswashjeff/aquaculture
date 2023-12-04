@@ -22,6 +22,7 @@ class fish:
         self.weight = weight
         self.living = True
         self.status = 'Nothing'
+        self.deadlyConc = 1
     
     #these still need work, specifically in calculating the chemical changes
     
@@ -33,38 +34,20 @@ class fish:
     def Poop(self):
         self.status = 'Pooping'
         result = (self.weight/3)
+        self.weight -= result
         return result
         
     def Pee(self,t):
         self.status = 'Peeing'
-        hours = t/3600
-        result = (pow((0.0014*self.weight),2)-0.4384*self.weight+43.303)
-        result = result*hours
+        days = (t/3600)*24
+        ratio = 0.00022046      # G ammonia per G fish per day
+        result = self.weight * ratio * days
         return result
     
-    def grow(self, T, DO, A, BOD, t):
-            # Hardcoded parameters from the table paper
-            a = 0.53
-            DOcrit = 1.0
-            DOmin = 0.3
-            h = 0.8
-            j = 0.0132
-            kmin = 0.00133
-            m = 0.67
-            n = 0.81
-            s = 21.38
-            Tmin = 15
-            Tmax = 41
-            Topt = 33
-            Acrit = 0.06
-            Amax = 1.40
-            BODcrit = 20
-            BODmax = 40
-
-    #def Grow(self,t):
-        #days = t/86400
-       # while self.weight <= 450:
-            #self.weight = pow((0.4244*days),2)+(83.729*days) 
+    def grow(self,t):
+        weeks = t/604800
+        GrowthRate = 440/(4*8*weeks)    #Grows to 440 grams over 8 months
+        self.weight += GrowthRate
             
     def getWeight(self):
         return self.weight
@@ -74,7 +57,7 @@ class fish:
 
     def action(self,t):
         fishActionProb = random.random()
-        print(fishActionProb)
+        #print(fishActionProb)
         if fishActionProb >= 0.0 and fishActionProb <= self.eatPercent:      #fish eats if the random number is in this range 
             result = self.Eat() 
         elif fishActionProb > self.eatPercent and fishActionProb <= self.poopPercent: #fish poops if the random number is in this range   
@@ -87,7 +70,7 @@ class fish:
             result = 0
             self.status = "Nothing"
             
-        print(self.status)
+        #  print(self.status)
         return result,self.status
     
 

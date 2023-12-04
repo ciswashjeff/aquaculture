@@ -152,21 +152,22 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                     print("eating")
                     plantPopulation[0] = plantPopulation[0] - fish.getAmmountEaten()
                     # Modify chemicals accordingly
-                    pass
+                    
                 elif status == 'Pooping':
-                    C1 += action_result  # Assuming action_result is the increase in Ammonia
+                    #C1 += action_result  # Assuming action_result is the increase in Ammonia
                     print("pooping")
                 elif status == 'Peeing':
                     print("peeing")
                     # Modify chemicals accordingly
-                    pass
+                    C1 += action_result
+                    
                 # (could move this to fish class)
                 # if the ammonia levels exceed 2 mg/L or nitrite levels exceed 5 mg/l
                 # the fish begin to die 
                 if C1 >= 2 or C3 >= 5:
                     # each time of the simulation is one sec
                     # if we assume it takes one week for the fish to die, it loses
-                    # 1/604800 (one week in seconds) of health each second
+                    # 1/86400 (one week in seconds) of health each second
                     fishHealth -= 1 / 604800
                     if fishHealth <= 0:
                         # pop the fish from the array
@@ -290,6 +291,14 @@ class AquariumSimulatorGUI(QWidget):
         self.durationInput = QLineEdit(self)
         layout.addWidget(QLabel('Duration of Simulation (Seconds):'))
         layout.addWidget(self.durationInput)
+        
+         # Dropdown menu for fish weight / age
+        self.setWindowTitle('Dropdown Menu Example')
+
+        label = QLabel('Select age range:')
+        layout.addWidget(label)
+
+        self.setLayout(layout)
 
         # Save Log Checkbox
         self.saveLogCheckbox = QCheckBox('Save Log to Folder', self)
@@ -300,13 +309,6 @@ class AquariumSimulatorGUI(QWidget):
         self.startButton.clicked.connect(self.start_simulation)
         layout.addWidget(self.startButton)
 
-        # Dropdown menu for fish weight / age
-        self.setWindowTitle('Dropdown Menu Example')
-
-        label = QLabel('Select age range:')
-        layout.addWidget(label)
-
-        self.setLayout(layout)
 
     def on_selection_change(self, index):
         selected_item = self.dropdown.currentText()
@@ -316,14 +318,18 @@ class AquariumSimulatorGUI(QWidget):
         # Get input values
         tank_size = int (self.tankSizeInput.text())
         number_of_fish = int (self.numberOfFishInput.text())
+        fish_weights = 0
 
         # choosing the starting weight of the fish based on the value the user selects
         if 'Fry- 1 gram' in self.dropdown.currentText():
-            fish_weights = 1
+            fish_weight = 1
         elif 'Juveniles- 8 to 9 grams' in self.dropdown.currentText():
-            fish_weights = random.randint(8, 9)
+            fish_weight = random.randint(8, 9)
         elif 'Adults- 450 to 900 grams (1 to 2 pounds)' in self.dropdown.currentText():
-            fish_weights = random.randint(450, 900)
+            fish_weight = random.randint(450, 900)
+            
+
+        
 
         duration = self.durationInput.text()
         save_log = self.saveLogCheckbox.isChecked()
