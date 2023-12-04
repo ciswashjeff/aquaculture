@@ -54,9 +54,10 @@ class fish:
         return result
     
     def grow(self,t):
-        weeks = t/604800
-        GrowthRate = 440/(4*8*weeks)    #Grows to 440 grams over 8 months
-        self.weight += GrowthRate
+        weeks = 32* 604800
+        GrowthRate = 440/(weeks)    #Grows to 440 grams over 8 months
+        if self.weight <= 440:
+            self.weight += t * GrowthRate
             
     def getWeight(self):
         return self.weight
