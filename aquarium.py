@@ -148,6 +148,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
         for t in range(V):
             for fish in fish_population:
                 index = fish_population.index(fish) + 1
+                fish.grow(t)
                 action_result, status = fish.action(t)
                 if status == 'Eating':
                     if save_log:
@@ -165,23 +166,13 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                     # Modify chemicals accordingly
                     C1 += action_result
                     
-                if fish.checkDeath(C1,C3):
+                if not fish.checkDeath(C1,C3):
                     if save_log:
                         log.append(f"{fish.name} has died at {t} seconds\n")
                     selfSufficient = False
                     fish_population.remove(fish)
                     dead_fish.append(fish)
-        #if save_log:
-            #for event in log:
-                #output_file.write(event)   
-            #output_file.close()
-             
-                     
-                    
-                   
-                        
-        
-
+      
 
             # If plant biomass is greater than max, set it to max
             if((plantPopulation[0] + plantPopulation[1]) >= 1):
@@ -206,9 +197,12 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
             dC4.append(C4 - C4i)
             dT.append(t)
 
+
+                
+             
             bar()
     print("Generating plots...")
-    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V)
+    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size)
 
     
 #======================================================================================================================================
@@ -220,6 +214,7 @@ plantPop = [0,0]
 
 def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8))
+    print("Generating plots...")
     
 
     # Chemical plots
@@ -233,17 +228,25 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 
     
    
-        
-    for fsh in fish_population: # This one should work for populating production
-        production += fsh.getWeight()
+    #production = 0    
+    for fish in fish_population: # This one should work for populating production
+        production += fish.getWeight()
+    production = ("{:.2f}".format( int(production) )) 
 
     weeks = int(duration)/604800
     weeks = ("{:.2f}".format( weeks )) 
     
-    production = ("{:.2f}".format( int(production) )) 
+    # Fish population plot
+    '''for fish in range(number_of_fish):
+        currentFish = fish_population[fish]
+        production += currentFish.getWeight()
+        print(fish_population[fish].getWeight())'''
+        
+    for fsh in fish_population: # This one should work for populating production
+        production += fsh.getWeight()
     
    
-    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {duration/604800}"
+    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {L} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {()}\n\nTime Elapsed in Week(s): {V/604800}"
     
     ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
     ax[1, 0].set_title('Populations Over Time')
