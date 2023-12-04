@@ -14,7 +14,7 @@ import random
 import matplotlib.pyplot as plt
 from alive_progress import alive_bar
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QComboBox,QHBoxLayout,QProgressBar
 from fish import fish
 
 
@@ -148,7 +148,6 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
         for t in range(V):
             for fish in fish_population:
                 index = fish_population.index(fish) + 1
-                fish.grow()
                 action_result, status = fish.action(t)
                 if status == 'Eating':
                     if save_log:
@@ -165,7 +164,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                         log.append(f"{fish.name} is peeing at {t} seconds\n")
                     # Modify chemicals accordingly
                     C1 += action_result
-                    
+                fish.grow(t)
                 if not fish.checkDeath(C1,C3):
                     if save_log:
                         log.append(f"{fish.name} has died at {t} seconds\n")
@@ -219,6 +218,7 @@ plantPop = [0,0]
 def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8))
     print("Generating plots...")
+    production = 0 
     
 
     # Chemical plots
@@ -232,11 +232,11 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 
     
    
-    #production = 0    
+       
     for fish in fish_population: # This one should work for populating production
         production += fish.getWeight()
-    production = ("{:.2f}".format(production)) 
-
+    
+    production = ("{:.2f}".format( float(production) )) 
     weeks = int(duration)/604800
     weeks = ("{:.2f}".format( weeks )) 
     
@@ -265,8 +265,12 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 class AquariumSimulatorGUI(QWidget):
     def __init__(self):
         super().__init__()
+        x = 500
+        y = 400
 
         # GUI layout
+        self.setWindowTitle('Aquaculture Simulation')
+        self.setFixedSize(x, y)  # Width, Height in pixels
         layout = QVBoxLayout()
 
         # Tank Size Input
@@ -284,26 +288,30 @@ class AquariumSimulatorGUI(QWidget):
         layout.addWidget(QLabel('Size of Fish:'))
         self.dropdown.addItem('Fry- 1 gram')
         self.dropdown.addItem('Juveniles- 8 to 9 grams')
-        self.dropdown.addItem('Adults- 220 to 440 grams (0.5 to 1 pound)')
+        self.dropdown.addItem('Adults- 220 to 440 grams (1 to 2 pounds)')
 
         # Connecting a function to handle the item selection change
         self.dropdown.currentIndexChanged.connect(self.on_selection_change)
 
         layout.addWidget(self.dropdown)
 
-        # Duration of Simulation Input
+         # Duration of Simulation Input with Unit Dropdown
+        durationLayout = QHBoxLayout()  # Horizontal layout for duration input and unit dropdown
         self.durationInput = QLineEdit(self)
-        layout.addWidget(QLabel('Duration of Simulation (Seconds):'))
-        layout.addWidget(self.durationInput)
+        self.durationInput.setFixedWidth(200)  # Set the width to half of the GUI width
+        durationLayout.addWidget(QLabel('Duration of Simulation:'))
+        durationLayout.addWidget(self.durationInput)
+
+        # Unit of Time Dropdown
+        self.unitDropdown = QComboBox(self)
+        self.unitDropdown.addItems(["Seconds", "Weeks", "Months"])
+        durationLayout.addWidget(self.unitDropdown)
+
+        layout.addLayout(durationLayout)  # Add the horizontal layout to the main layout
+
+        # Other input fields and buttons...
         
-         # Dropdown menu for fish weight / age
-        self.setWindowTitle('Dropdown Menu Example')
-
-        label = QLabel('Select age range:')
-        layout.addWidget(label)
-
-        self.setLayout(layout)
-
+        
         # Save Log Checkbox
         self.saveLogCheckbox = QCheckBox('Save Log to Folder', self)
         layout.addWidget(self.saveLogCheckbox)
@@ -312,24 +320,30 @@ class AquariumSimulatorGUI(QWidget):
         self.startButton = QPushButton('Start Simulation', self)
         self.startButton.clicked.connect(self.start_simulation)
         layout.addWidget(self.startButton)
+        
 
-        # Dropdown menu for fish weight / age
-        self.setWindowTitle('Dropdown Menu Example')
-
-        label = QLabel('Select age range:')
-        layout.addWidget(label)
-
+        
         self.setLayout(layout)
+
+       
+        
+
+      
+
 
     def on_selection_change(self, index):
         selected_item = self.dropdown.currentText()
         print(f"Selected: {selected_item}")
 
     def start_simulation(self):
+        
+        if not self.tankSizeInput.text().isdigit() or not self.numberOfFishInput.text().isdigit():
+            print("Please enter valid numeric inputs for tank size and number of fish.")
         # Get input values
         tank_size = int (self.tankSizeInput.text())
         number_of_fish = int (self.numberOfFishInput.text())
         fish_weights = 0
+        timeRatio = 1
 
         # choosing the starting weight of the fish based on the value the user selects
         if 'Fry- 1 gram' in self.dropdown.currentText():
@@ -338,10 +352,31 @@ class AquariumSimulatorGUI(QWidget):
             fish_weights = random.randint(8, 9)
         elif 'Adults- 220 to 440 grams (0.5 to 1 pound)' in self.dropdown.currentText():
             fish_weights = random.randint(220, 440)
+            
+        if 'Seconds' in self.unitDropdown.currentText():
+            timeRatio = 1
+        elif 'Weeks' in self.unitDropdown.currentText():
+            timeRatio = 604800  # Seconds in a week
+        elif 'Months' in self.unitDropdown.currentText():
+            timeRatio = 2630000  # Approximate seconds in a month
 
-        duration = self.durationInput.text()
+        duration = int(self.durationInput.text()) * timeRatio
         save_log = self.saveLogCheckbox.isChecked()
         production = 0
         
         fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, fish_weights) for x in range(number_of_fish)]
     
+        
+
+
+        # Start the simulation with these parameters
+        # Implement the logic to start the simulation here
+        print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Size of fish: {self.dropdown.currentText()}, Duration: {duration} seconds, Save log: {save_log}")
+        simulation(tank_size, number_of_fish, fish_weights, duration, production, save_log, fish_population)
+
+          
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = AquariumSimulatorGUI()
+    window.show()
+    sys.exit(app.exec_())
