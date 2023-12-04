@@ -130,6 +130,9 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     dt = 1
     alivebaramount = V // dt
     dead_fish = []
+    numFish = []
+    
+    #numFish.append(number_of_fish)
 
     
 
@@ -138,6 +141,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     C1, C2, C3, C4 = 0, 8.5, 0, 0
     C1i, C2i, C3i, C4i = 0, 8.5, 0, 0
     dC1, dC2, dC3, dC4, dT = [], [], [], [], []
+    #dT.append(0)
     fishHealth = 100
     log = []
     output_file = open('event_log.txt','w')
@@ -171,6 +175,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                     selfSufficient = False
                     fish_population.remove(fish)
                     dead_fish.append(fish)
+            
       
 
             # If plant biomass is greater than max, set it to max
@@ -195,7 +200,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
             dC3.append(C3 - C3i)
             dC4.append(C4 - C4i)
             dT.append(t)
-
+            numFish.append(len(fish_population))
 
                 
              
@@ -205,7 +210,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
         for event in log:
             output_file.write(event)   
         output_file.close()
-    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V)
+    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V,numFish)
 
     
 #======================================================================================================================================
@@ -215,7 +220,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
 plantPop = [0,0]
 
 
-def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration):
+def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration,numFish):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8))
     print("Generating plots...")
     production = 0 
@@ -245,7 +250,7 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
    
     tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {weeks}"
     
-    ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
+    ax[1, 0].plot(convert_seconds_to_weeks(dT), numFish, label='Fish Population over Time')
     ax[1, 0].set_title('Populations Over Time')
     ax[1, 0].set_xlabel('Time (Weeks)')
     ax[1, 0].set_ylabel('Population Size')
