@@ -53,11 +53,6 @@ p4i = p4
 
 
 
-# Other Factors
-DO = 10
-L = 75 # Size of tank in liters
-selfSufficient = True
-
 
 # Define Functions
 
@@ -124,9 +119,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     print("\n")
     print("=============================================================================================================================")
     print("\n\nStarting Simulation...\n\n")
-    
-    
-    selfSufficient = True
+
 
     # Plant Biomass List
     plantPopulation = [0.5, (0.00000019*1)] # Normalized Plant Biomass, Growth Rate per Second
@@ -136,12 +129,20 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     V = int(duration)
     dt = 1
     alivebaramount = V // dt
+    dead_fish = []
+
+    
+
    
     # Reset chemical concentrations for each simulation run
     C1, C2, C3, C4 = 0, 8.5, 0, 0
     C1i, C2i, C3i, C4i = 0, 8.5, 0, 0
     dC1, dC2, dC3, dC4, dT = [], [], [], [], []
     fishHealth = 100
+    log = []
+    output_file = open('event_log.txt','w')
+    selfSufficient = True
+
 
     with alive_bar(alivebaramount) as bar:
         for t in range(V):
@@ -149,33 +150,37 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                 index = fish_population.index(fish) + 1
                 action_result, status = fish.action(t)
                 if status == 'Eating':
-                    print(f"fish {index} is eating")
+                    if save_log:
+                        log.append(f"{fish.name} is eating at time {t} seconds\n")
                     plantPopulation[0] = plantPopulation[0] - fish.getAmmountEaten()
                     # Modify chemicals accordingly
-                    pass
+                    
                 elif status == 'Pooping':
-                    C1 += action_result  # Assuming action_result is the increase in Ammonia
-                    print(f"fish {index} is pooping")
+                    #C1 += action_result  # Assuming action_result is the increase in Ammonia
+                    if save_log:
+                        log.append(f"{fish.name} is pooping at time {t} seconds\n")
                 elif status == 'Peeing':
-                    print(f"fish {index} is peeing")
+                    if save_log:
+                        log.append(f"{fish.name} is peeing at {t} seconds\n")
                     # Modify chemicals accordingly
-                    pass
-                # (could move this to fish class)
-                # if the ammonia levels exceed 2 mg/L or nitrite levels exceed 5 mg/l
-                # the fish begin to die 
-                if C1 >= 2 or C3 >= 5:
-                    # each time of the simulation is one sec
-                    # if we assume it takes one week for the fish to die, it loses
-                    # 1/86400 (one week in seconds) of health each second
-                    fishHealth -= 1 / 86400
-                    if fishHealth <= 0:
-                        # report the time step in weeks or day
-                        # report that the fish are dead and the tank is not sufficient
-                        selfSufficient = False
-                        # pop the fish from the array
-                        for i in range(number_of_fish):
-                            fish_population.pop(0)
-                            print(f"fish {i + 1} has died")
+                    C1 += action_result
+                    
+                if fish.checkDeath(C1,C3):
+                    if save_log:
+                        log.append(f"{fish.name} has died at {t} seconds\n")
+                    selfSufficient = False
+                    fish_population.remove(fish)
+                    dead_fish.append(fish)
+        #if save_log:
+            #for event in log:
+                #output_file.write(event)   
+            #output_file.close()
+             
+                     
+                    
+                   
+                        
+        
 
 
             # If plant biomass is greater than max, set it to max
@@ -203,14 +208,17 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
 
             bar()
     print("Generating plots...")
-    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size, duration)
+    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V)
 
-
+    
 #======================================================================================================================================
 # Plotting Start
 #======================================================================================================================================
+ # Create a figure and axis
+plantPop = [0,0]
 
-def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size, duration):
+
+def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8))
     
 
@@ -224,11 +232,7 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
     ax[0, 0].set_ylabel('Change in Concentration: mg/L')
 
     
-    # Fish population plot
-    '''for fish in range(number_of_fish):
-        currentFish = fish_population[fish]
-        production += currentFish.getWeight()
-        print(fish_population[fish].getWeight())'''
+   
         
     for fsh in fish_population: # This one should work for populating production
         production += fsh.getWeight()
@@ -237,7 +241,9 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
     weeks = ("{:.2f}".format( weeks )) 
     
     production = ("{:.2f}".format( int(production) )) 
-    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {weeks}"
+    
+   
+    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {duration/604800}"
     
     ax[1, 0].plot(convert_seconds_to_weeks(dT), [len(fish_population)] * len(dT), label='Fish Population')
     ax[1, 0].set_title('Populations Over Time')
@@ -253,7 +259,6 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 
     plt.tight_layout()
     plt.show()
-
 
 # GUI
 
@@ -290,6 +295,14 @@ class AquariumSimulatorGUI(QWidget):
         self.durationInput = QLineEdit(self)
         layout.addWidget(QLabel('Duration of Simulation (Seconds):'))
         layout.addWidget(self.durationInput)
+        
+         # Dropdown menu for fish weight / age
+        self.setWindowTitle('Dropdown Menu Example')
+
+        label = QLabel('Select age range:')
+        layout.addWidget(label)
+
+        self.setLayout(layout)
 
         # Save Log Checkbox
         self.saveLogCheckbox = QCheckBox('Save Log to Folder', self)
@@ -316,29 +329,31 @@ class AquariumSimulatorGUI(QWidget):
         # Get input values
         tank_size = int (self.tankSizeInput.text())
         number_of_fish = int (self.numberOfFishInput.text())
+        fish_weights = 0
 
         # choosing the starting weight of the fish based on the value the user selects
         if 'Fry- 1 gram' in self.dropdown.currentText():
-            fish_weights = 1
+            fish_weight = 1
         elif 'Juveniles- 8 to 9 grams' in self.dropdown.currentText():
             fish_weights = random.randint(8, 9)
-        elif 'Adults- 450 to 900 grams (1 to 2 pounds)' in self.dropdown.currentText():
-            fish_weights = random.randint(450, 900)
+        elif 'Adults- 220 to 440 grams (0.5 to 1 pound)' in self.dropdown.currentText():
+            fish_weights = random.randint(220, 440)
 
         duration = self.durationInput.text()
         save_log = self.saveLogCheckbox.isChecked()
         production = 0
         
         fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, fish_weights) for x in range(number_of_fish)]
+    
+        
 
-        V = duration
 
         # Start the simulation with these parameters
         # Implement the logic to start the simulation here
         print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Size of fish: {self.dropdown.currentText()}, Duration: {duration} seconds, Save log: {save_log}")
         simulation(tank_size, number_of_fish, fish_weights, duration, production, save_log, fish_population)
 
-            
+          
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = AquariumSimulatorGUI()
