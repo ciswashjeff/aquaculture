@@ -168,7 +168,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                         log.append(f"{fish.name} is peeing at {t} seconds\n")
                     # Modify chemicals accordingly
                     C1 += action_result
-                fish.grow(t)
+                fish.grow()
                 if not fish.checkDeath(C1,C3):
                     if save_log:
                         log.append(f"{fish.name} has died at {t} seconds\n")
@@ -210,7 +210,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
         for event in log:
             output_file.write(event)   
         output_file.close()
-    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V,numFish)
+    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V,numFish,plantPopulation)
 
     
 #======================================================================================================================================
@@ -220,7 +220,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
 plantPop = [0,0]
 
 
-def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration,numFish):
+def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration,numFish,plantPopulation):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8))
     print("Generating plots...")
     production = 0 
@@ -245,10 +245,10 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
     weeks = int(duration)/604800
     weeks = ("{:.2f}".format( weeks )) 
     
-   
+    plantBiomass = ("{:.4f}".format( float(plantPopulation[0]) ))
     
    
-    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {weeks}"
+    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {weeks}\n\nPlant Biomass: {plantBiomass}"
     
     ax[1, 0].plot(convert_seconds_to_weeks(dT), numFish, label='Fish Population over Time')
     ax[1, 0].set_title('Populations Over Time')
