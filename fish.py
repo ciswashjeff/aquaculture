@@ -12,7 +12,7 @@ import random
 
 class fish:
 
-    def __init__(self, name, eatPercent, poopPercent,peePercent, deathPercent, servingSize, weight):
+    def __init__(self, name, eatPercent, poopPercent,peePercent, deathPercent, servingSize, weight,tankSize):
         self.name = name
         self.eatPercent = eatPercent
         self.poopPercent = poopPercent
@@ -25,13 +25,18 @@ class fish:
         self.deadlyC1 = 2
         self.deadlyC3 = 5
         self.health = 86400 # A day in seconds
+        self.tankSize = tankSize
     
     #these still need work, specifically in calculating the chemical changes
 
     def checkDeath(self,C1,C3):
-        if C1 >= self.deadlyC1 or C3 >= self.deadlyC3:
+        C1Conc = C1/self.tankSize
+        C3Conc = C3/self.tankSize
+        if (C1Conc) > self.deadlyC1 or (C3Conc) > self.deadlyC3:
             self.health -= 1
+            #print(f"{self.name} is taking damage C1 (mg/l): {C1Conc} C3 (mg/l): {C3Conc}")
             if self.health <= 0:
+                #print(f"{self.name} is at {self.health} health and is dying")
                 self.living = False   
         return self.living
     
@@ -53,13 +58,12 @@ class fish:
         result = self.weight * ratio * days
         return result
     
-    def grow(self):
-        growthRate = 13.75 / 604800
+    def grow(self,t):
+        GrowthRate = 13.75/(604800)    #Grows to 440 grams over 8 months
         if self.weight <= 440:
-            self.weight = self.weight + growthRate
+            self.weight += GrowthRate
             
     def getWeight(self):
-        print(self.weight)
         return self.weight
 
     def getAmmountEaten(self):
@@ -82,7 +86,6 @@ class fish:
             
         #  print(self.status)
         return result,self.status
-    
     
 
             
