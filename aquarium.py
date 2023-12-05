@@ -141,8 +141,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
     C1, C2, C3, C4 = 0, 8.5, 0, 0
     C1i, C2i, C3i, C4i = 0, 8.5, 0, 0
     dC1, dC2, dC3, dC4, dT = [], [], [], [], []
-    #dT.append(0)
-    fishHealth = 100
+    aC1,aC2,aC3,aC4 = [],[],[],[]
     log = []
     output_file = open('event_log.txt','w')
     selfSufficient = True
@@ -168,7 +167,7 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
                         log.append(f"{fish.name} is peeing at {t} seconds\n")
                     # Modify chemicals accordingly
                     C1 += action_result
-                fish.grow()
+                fish.grow(t)
                 if not fish.checkDeath(C1,C3):
                     if save_log:
                         log.append(f"{fish.name} has died at {t} seconds\n")
@@ -199,6 +198,10 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
             dC1.append(C1 - C1i)
             dC3.append(C3 - C3i)
             dC4.append(C4 - C4i)
+            
+            aC1.append((C1/tank_size))
+            aC3.append((C3/tank_size))
+            aC4.append((C4/tank_size))
             dT.append(t)
             numFish.append(len(fish_population))
 
@@ -210,57 +213,70 @@ def simulation(tank_size, number_of_fish, type_of_fish, duration, production, sa
         for event in log:
             output_file.write(event)   
         output_file.close()
-    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V,numFish,plantPopulation)
+    plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,V,numFish,aC1,aC3,aC4,plantPopulation)
 
     
 #======================================================================================================================================
 # Plotting Start
 #======================================================================================================================================
- # Create a figure and axis
-plantPop = [0,0]
-
-
-def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size,selfSufficient,duration,numFish,plantPopulation):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8))
-    print("Generating plots...")
-    production = 0 
+def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production, tank_size, selfSufficient, duration, numFish, aC1, aC3, aC4,plantPopulation):
+    plt.style.use('Solarize_Light2')  # Using a predefined style for nicer plots
+    fig, ax = plt.subplots(2, 2, figsize=(12, 10))
+    
+    #print(plt.style.available)
     
 
-    # Chemical plots
-    ax[0, 0].plot(convert_seconds_to_weeks(dT), dC1, label='Ammonia')
-    ax[0, 0].plot(convert_seconds_to_weeks(dT), dC3, label='Nitrite')
-    ax[0, 0].plot(convert_seconds_to_weeks(dT), dC4, label='Nitrate')
-    ax[0, 0].legend()
-    ax[0, 0].set_title('Aquarium Chemicals Over Time') 
-    ax[0, 0].set_xlabel('Time (Weeks)')
-    ax[0, 0].set_ylabel('Change in Concentration: mg/L')
+    # Chemical Change plots
+    time_weeks = convert_seconds_to_weeks(dT)
+    ax[0, 0].plot(time_weeks, dC1, label='Ammonia', color='tab:orange')
+    ax[0, 0].plot(time_weeks, dC3, label='Nitrite', color='tab:red')
+    ax[0, 0].plot(time_weeks, dC4, label='Nitrate', color='tab:green')
+    ax[0, 0].legend(loc='upper right')
+    ax[0, 0].set_title('Change in Chemicals Over Time', fontsize=14, fontweight='bold') 
+    ax[0, 0].set_xlabel('Time (Weeks)', fontsize=12)
+    ax[0, 0].set_ylabel('Change in Concentration (mg/L)', fontsize=12)
 
-    
-   
-       
-    for fish in fish_population: # This one should work for populating production
-        production += fish.getWeight()
-    
-    production = ("{:.2f}".format( float(production) )) 
-    weeks = int(duration)/604800
-    weeks = ("{:.2f}".format( weeks )) 
-    
+    # Calculating Total Production
+    total_production = sum(fish.getWeight() for fish in fish_population)
+    formatted_production = "{:.2f}".format(float(total_production))
+    formatted_weeks = "{:.2f}".format(int(duration) / 604800)
     plantBiomass = ("{:.4f}".format( float(plantPopulation[0]) ))
+
+    tankStatus = (f"\n\n\nAquaculture Tank Stats\n"
+                  f"________________________________________\n\n\n"
+                  f"Tank Size: {tank_size} Liters\n\n"
+                  f"The tank will grow harvestable fish: {selfSufficient}\n\n"
+                  f"Amount of Fish Produced (g): {formatted_production}\n\n"
+                  f"Time Elapsed in Week(s): {formatted_weeks}\n\n"
+                  f"Plant Biomass: {plantBiomass}\n\n")
+                    
     
+    # Fish Population Plot
+    ax[1, 0].plot(time_weeks, numFish, label='Fish Population', color='tab:orange')
+    ax[1, 0].set_title('Populations Over Time', fontsize=14, fontweight='bold')
+    ax[1, 0].set_xlabel('Time (Weeks)', fontsize=12)
+    ax[1, 0].set_ylabel('Population Size', fontsize=12)
+    ax[1, 0].legend(loc='upper right')
+
+    # Chemical Concentration Plots
+    ax[0, 1].plot(time_weeks, aC1, label='Ammonia', color='tab:orange')
+    ax[0, 1].plot(time_weeks, aC3, label='Nitrite', color='tab:red')
+    ax[0, 1].plot(time_weeks, aC4, label='Nitrate', color='tab:green')
+    # Add horizontal lines for deadly levels
+    ax[0, 1].axhline(y=2, color='orange', linestyle='--', label='Deadly Ammonia Level')
+    ax[0, 1].axhline(y=5, color='red', linestyle='--', label='Deadly Nitrite Level')
+    ax[0, 1].legend(loc='upper right')
    
-    tankStatus = f"Aquaponic Stats\n_____________________\n\nTank Size: {tank_size} Liters \n\nThe tank is self suffcient: {selfSufficient}\n\nAmount of Fish Produced (g): {production}\n\nTime Elapsed in Week(s): {weeks}\n\nPlant Biomass: {plantBiomass}"
-    
-    ax[1, 0].plot(convert_seconds_to_weeks(dT), numFish, label='Fish Population over Time')
-    ax[1, 0].set_title('Populations Over Time')
-    ax[1, 0].set_xlabel('Time (Weeks)')
-    ax[1, 0].set_ylabel('Population Size')
-    ax[1, 0].legend()
 
-    # Tank status
-    ax[0, 1].axis('off')
+    # Add text labels for the horizontal lines
+   
+    ax[0, 1].set_title(f'Chemicals Concentration Over Time ({tank_size} Liters)', fontsize=14, fontweight='bold') 
+    ax[0, 1].set_xlabel('Time (Weeks)', fontsize=12)
+    ax[0, 1].set_ylabel('Concentration (mg/L)', fontsize=12)
 
+    # Tank Status Text
     ax[1, 1].axis('off')
-    ax[1, 1].text(0.421, 0.998, tankStatus, fontsize=16, ha='left', va='bottom')
+    ax[1, 1].text(0.410, 0.8681, tankStatus, fontsize=20, ha='center', va='center')
 
     plt.tight_layout()
     plt.show()
@@ -270,9 +286,9 @@ def plot_results(dC1, dC3, dC4, dT, number_of_fish, fish_population, production,
 class AquariumSimulatorGUI(QWidget):
     def __init__(self):
         super().__init__()
-        x = 500
-        y = 400
-
+        x = 800
+        y = 600
+        
         # GUI layout
         self.setWindowTitle('Aquaculture Simulation')
         self.setFixedSize(x, y)  # Width, Height in pixels
@@ -363,19 +379,18 @@ class AquariumSimulatorGUI(QWidget):
         elif 'Weeks' in self.unitDropdown.currentText():
             timeRatio = 604800  # Seconds in a week
         elif 'Months' in self.unitDropdown.currentText():
-            timeRatio = 2630000  # Approximate seconds in a month
+            timeRatio = 2628003  # Approximate seconds in a month
 
         duration = int(self.durationInput.text()) * timeRatio
         save_log = self.saveLogCheckbox.isChecked()
         production = 0
         
-        fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, fish_weights) for x in range(number_of_fish)]
+        fish_population = [fish(f'Tilapia{x}', 0.0000069, 0.0000104, 0.0000173, 0, 0.02, fish_weights,tank_size) for x in range(number_of_fish)]
     
         
 
 
         # Start the simulation with these parameters
-        # Implement the logic to start the simulation here
         print(f"Starting simulation with: Tank size: {tank_size} liters, Number of fish: {number_of_fish}, Size of fish: {self.dropdown.currentText()}, Duration: {duration} seconds, Save log: {save_log}")
         simulation(tank_size, number_of_fish, fish_weights, duration, production, save_log, fish_population)
 
